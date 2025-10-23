@@ -509,7 +509,7 @@ const downloadCV = async () => {
     <div class="container-std flex items-center justify-between">
       <small class="text-mute">
         <span v-if="mode==='full'">© De Ménorval Baptiste</span>
-        <span v-else>© Portfolio</span>
+        <span v-else>© Palawi</span>
       </small>
       <div class="flex gap-4">
         <a class="text-white/80 hover:text-white transition inline-flex items-center gap-2" href="https://github.com/Palawizard" target="_blank" rel="noopener noreferrer">
