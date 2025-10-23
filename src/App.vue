@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import profile from './assets/profile image.png'
 import polaris from './assets/polaris.gif'
 import dimensional from './assets/dimentional.gif'
@@ -17,19 +17,95 @@ import curseforgeIcon from './assets/curseforge.webp'
 
 const scrolled = ref(false)
 const menuOpen = ref(false)
+const mode = ref('locked')
+const password = ref('')
+const showRequest = ref(false)
+const currentUrl = ref('')
+const errorMsg = ref('')
+const isSubmitting = ref(false)
+
+const realName = 'De Ménorval Baptiste'
+const brandTitle = computed(() => (mode.value === 'full' ? realName : 'Portfolio'))
+const maskedName = 'Name Hidden'
+
 const onScroll = () => { scrolled.value = window.scrollY > 8 }
-onMounted(() => { onScroll(); window.addEventListener('scroll', onScroll, { passive: true }) })
+onMounted(() => {
+  const saved = sessionStorage.getItem('authMode')
+  if (saved === 'full' || saved === 'lite') mode.value = saved
+  currentUrl.value = window.location.href
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
 onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
+
+const unlock = () => {
+  errorMsg.value = ''
+  if (password.value.trim().length === 0) {
+    errorMsg.value = 'Please enter an access code.'
+    return
+  }
+  if (password.value === '3JAr9Ja6tci?') {
+    mode.value = 'full'
+    sessionStorage.setItem('authMode', 'full')
+    password.value = ''
+  } else {
+    errorMsg.value = 'Incorrect access code.'
+  }
+}
+const continueLite = () => {
+  mode.value = 'lite'
+  sessionStorage.setItem('authMode', 'lite')
+}
+const relock = () => {
+  password.value = ''
+  errorMsg.value = ''
+  mode.value = 'locked'
+  sessionStorage.removeItem('authMode')
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+const onRequestSubmit = () => {
+  isSubmitting.value = true
+  setTimeout(() => { isSubmitting.value = false }, 1200)
+}
 </script>
 
 <template>
+  <div v-if="mode === 'locked'" class="fixed inset-0 z-[100] grid place-items-center bg-black/70 backdrop-blur-md">
+    <div class="w-full max-w-lg rounded-2xl bg-surface p-6 ring-1 ring-white/10 shadow-2xl">
+      <h1 class="text-xl font-semibold text-white mb-2">Private details locked</h1>
+      <p class="text-mute mb-4">Since the website is public, some personal details are hidden to protect my privacy. Enter the access code to view them. You can find the access code on my Linkedin or you can request it.</p>
+      <label class="block text-sm text-mute mb-1">Access code</label>
+      <input v-model="password" type="password" class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-brand" placeholder="Enter code" @keydown.enter.prevent="unlock">
+      <p v-if="errorMsg" class="mt-2 text-sm text-rose-400">{{ errorMsg }}</p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button @click="unlock" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow">Unlock</button>
+        <button @click="continueLite" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15">Continue without password</button>
+        <button @click="showRequest = !showRequest" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium border border-white/25 text-white hover:bg-white/10">Request Access Code</button>
+      </div>
+      <form v-if="showRequest" action="https://formsubmit.co/baptistedemenorval@gmail.com" method="POST" target="_blank" class="mt-4 grid gap-3" @submit="onRequestSubmit">
+        <input type="hidden" name="_subject" value="Portfolio access code request">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="page" :value="currentUrl">
+        <label class="text-sm text-mute">Your email</label>
+        <input name="requester_email" type="email" required class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-brand" placeholder="name@example.com">
+        <button :disabled="isSubmitting" type="submit" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow disabled:opacity-70">
+          <img :src="emailIcon" alt="" class="h-4 w-4 object-contain">
+          <span>{{ isSubmitting ? 'Sending...' : 'Send request' }}</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <header :class="['sticky top-0 z-50 transition-all', scrolled ? 'glass-solid shadow-lg' : 'glass']">
     <nav class="container-std flex items-center justify-between py-3">
-      <a href="#" class="text-white font-semibold tracking-wide">De Ménorval Baptiste</a>
-      <button class="md:hidden inline-flex items-center justify-center rounded-lg border border-white/15 p-2 text-white/80 hover:text-white hover:bg-white/10"
-              type="button" @click="menuOpen = !menuOpen" aria-label="Toggle navigation">
-        <span class="block h-0.5 w-5 bg-white" />
-      </button>
+      <a href="#" class="text-white font-semibold tracking-wide">{{ brandTitle }}</a>
+      <div class="flex items-center gap-2">
+        <button v-if="mode!=='locked'" @click="relock" class="hidden md:inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white/85 hover:bg-white/10">Unlock</button>
+        <button class="md:hidden inline-flex items-center justify-center rounded-lg border border-white/15 p-2 text-white/80 hover:text-white hover:bg-white/10"
+                type="button" @click="menuOpen = !menuOpen" aria-label="Toggle navigation">
+          <span class="block h-0.5 w-5 bg-white" />
+        </button>
+      </div>
       <ul class="hidden md:flex items-center gap-2">
         <li><a class="px-3 py-2 rounded-full text-white/85 hover:bg-white/10 hover:text-white transition" href="#identity">Identity</a></li>
         <li><a class="px-3 py-2 rounded-full text-white/85 hover:bg-white/10 hover:text-white transition" href="#projects">Projects</a></li>
@@ -51,6 +127,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
         <a @click="menuOpen=false" class="px-3 py-2 rounded-lg text-white/85 hover:bg-white/10" href="#skills">Skills</a>
         <a @click="menuOpen=false" class="px-3 py-2 rounded-lg text-white/85 hover:bg-white/10" href="#interests">Interests</a>
         <a @click="menuOpen=false" class="px-3 py-2 rounded-lg text-white/85 hover:bg-white/10" href="#contact">Contact</a>
+        <button v-if="mode!=='locked'" @click="relock" class="col-span-2 rounded-lg px-3 py-2 font-medium border border-white/25 text-white/85 hover:bg-white/10">Unlock</button>
       </div>
     </div>
   </header>
@@ -63,17 +140,27 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
           <img :src="profile" alt="Profile photo" class="w-full h-full object-cover">
         </div>
         <div>
-          <h1 class="text-3xl md:text-4xl font-semibold mb-2">De Ménorval Baptiste</h1>
+          <div class="flex items-center gap-3">
+            <h1 class="text-3xl md:text-4xl font-semibold mb-2">
+              <span v-if="mode==='full'">De Ménorval Baptiste</span>
+              <span v-else>{{ maskedName }}</span>
+            </h1>
+            <button v-if="mode!=='locked'" @click="relock" class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white/85 hover:bg-white/10">Unlock</button>
+          </div>
           <p class="text-mute mb-6">Student · Toulouse, France</p>
           <div class="flex flex-wrap gap-2 mb-6">
             <span class="chip">Dev Student</span>
           </div>
           <div class="flex flex-wrap gap-3">
-            <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15"
+            <a v-if="mode==='full'" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15"
                href="/CV%20–%20Baptiste%20DE%20LA%20GOUBLAYE%20DE%20MENORVAL.pdf" download>
               <img :src="docIcon" alt="" class="h-4 w-4 object-contain">
               <span>Download CV</span>
             </a>
+            <span v-else class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/5 text-white/60 border border-white/10 select-none">
+              <img :src="docIcon" alt="" class="h-4 w-4 object-contain opacity-60">
+              <span>CV unavailable</span>
+            </span>
             <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow"
                href="#contact">
               <img :src="emailIcon" alt="" class="h-4 w-4 object-contain">
@@ -245,7 +332,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 
     <hr class="opacity-20">
 
-    <section id="education" class="py-14">
+    <section id="education" class="py-14" v-if="mode==='full'">
       <div class="container-std">
         <h2 class="text-2xl font-semibold mb-6">Education</h2>
         <div class="grid gap-4">
@@ -267,6 +354,13 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
       </div>
     </section>
 
+    <section v-else class="py-14">
+      <div class="container-std">
+        <h2 class="text-2xl font-semibold mb-6">Education</h2>
+        <div class="card p-5 text-mute">Hidden in public mode</div>
+      </div>
+    </section>
+
     <hr class="opacity-20">
 
     <section id="network" class="py-14">
@@ -278,13 +372,16 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
             <img :src="githubIcon" alt="" class="h-5 w-5 object-contain">
             <span>GitHub</span>
           </a>
-          <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow"
+          <a v-if="mode==='full'" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow"
              href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
             <img :src="linkedinIcon" alt="" class="h-5 w-5 object-contain rounded">
             <span>LinkedIn</span>
           </a>
-          <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-rose-600 text-white hover:brightness-110"
-             href="#contact">
+          <span v-else class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/5 text-white/60 border border-white/10 select-none">
+            <img :src="linkedinIcon" alt="" class="h-5 w-5 object-contain opacity-60 rounded">
+            <span>LinkedIn hidden</span>
+          </span>
+          <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-rose-600 text-white hover:brightness-110" href="#contact">
             <img :src="emailIcon" alt="" class="h-5 w-5 object-contain">
             <span>Email</span>
           </a>
@@ -381,10 +478,10 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
     <section id="contact" class="py-14">
       <div class="container-std">
         <h2 class="text-2xl font-semibold mb-6">Contact</h2>
-        <form action="https://formsubmit.co/baptistedemenorval@gmail.com" method="POST" target="_blank" class="grid gap-4 md:grid-cols-2">
-          <input type="hidden" name="_subject" value="Portfolio contact" />
-          <input type="hidden" name="_template" value="table" />
-          <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off" />
+        <form action="https://formsubmit.co/palawi.pro@gmail.com" method="POST" target="_blank" class="grid gap-4 md:grid-cols-2">
+          <input type="hidden" name="_subject" value="Portfolio contact">
+          <input type="hidden" name="_template" value="table">
+          <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off">
           <div class="card p-4">
             <label class="text-sm mb-1 block" for="name">Full name</label>
             <input id="name" name="name" type="text" class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-brand" placeholder="Your full name" required>
@@ -414,12 +511,15 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 
   <footer class="border-t border-white/10 py-6 mt-6">
     <div class="container-std flex items-center justify-between">
-      <small class="text-mute">© De Ménorval Baptiste</small>
+      <small class="text-mute">
+        <span v-if="mode==='full'">© De Ménorval Baptiste</span>
+        <span v-else>© Palawi</span>
+      </small>
       <div class="flex gap-4">
         <a class="text-white/80 hover:text-white transition inline-flex items-center gap-2" href="https://github.com/Palawizard" target="_blank" rel="noopener noreferrer">
           <img :src="githubIcon" alt="" class="h-5 w-5 object-contain"><span>GitHub</span>
         </a>
-        <a class="text-white/80 hover:text-white transition inline-flex items-center gap-2" href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
+        <a v-if="mode==='full'" class="text-white/80 hover:text-white transition inline-flex items-center gap-2" href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
           <img :src="linkedinIcon" alt="" class="h-5 w-5 object-contain rounded"><span>LinkedIn</span>
         </a>
       </div>
