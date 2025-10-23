@@ -153,7 +153,7 @@ const onRequestSubmit = () => {
           </div>
           <div class="flex flex-wrap gap-3">
             <a v-if="mode==='full'" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15"
-               href="/CV%20–%20Baptiste%20DE%20LA%20GOUBLAYE%20DE%20MENORVAL.pdf" download>
+               href="/portfolio/public/CV%20%E2%80%93%20Baptiste%20DE%20LA%20GOUBLAYE%20DE%20MENORVAL.pdf" download>
               <img :src="docIcon" alt="" class="h-4 w-4 object-contain">
               <span>Download CV</span>
             </a>
