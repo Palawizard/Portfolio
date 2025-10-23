@@ -38,13 +38,10 @@ onMounted(() => {
 })
 onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 
-const unlock = () => {
+const unlock = async () => {
   errorMsg.value = ''
-  if (password.value.trim().length === 0) {
-    errorMsg.value = 'Please enter an access code.'
-    return
-  }
-  if (password.value === '3JAr9Ja6tci?') {
+  if (!password.value.trim()) { errorMsg.value = 'Please enter an access code.'; return }
+  if (password.value === '?A$i&!ox@9') {
     mode.value = 'full'
     sessionStorage.setItem('authMode', 'full')
     password.value = ''
@@ -67,6 +64,19 @@ const onRequestSubmit = () => {
   isSubmitting.value = true
   setTimeout(() => { isSubmitting.value = false }, 1200)
 }
+const downloadCV = async () => {
+  const mod = await import('./assets/cv.pdf?url')
+  const url = mod.default
+  const res = await fetch(url)
+  const blob = await res.blob()
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = 'Baptiste_De_Menorval_CV.pdf'
+  document.body.appendChild(a)
+  a.click()
+  URL.revokeObjectURL(a.href)
+  a.remove()
+}
 </script>
 
 <template>
@@ -82,7 +92,7 @@ const onRequestSubmit = () => {
         <button @click="continueLite" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15">Continue without password</button>
         <button @click="showRequest = !showRequest" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium border border-white/25 text-white hover:bg-white/10">Request Access Code</button>
       </div>
-      <form v-if="showRequest" action="https://formsubmit.co/baptistedemenorval@gmail.com" method="POST" target="_blank" class="mt-4 grid gap-3" @submit="onRequestSubmit">
+      <form v-if="showRequest" action="https://formsubmit.co/palawi.pro@gmail.com" method="POST" target="_blank" class="mt-4 grid gap-3" @submit="onRequestSubmit">
         <input type="hidden" name="_subject" value="Portfolio access code request">
         <input type="hidden" name="_template" value="table">
         <input type="hidden" name="page" :value="currentUrl">
@@ -101,8 +111,7 @@ const onRequestSubmit = () => {
       <a href="#" class="text-white font-semibold tracking-wide">{{ brandTitle }}</a>
       <div class="flex items-center gap-2">
         <button v-if="mode!=='locked'" @click="relock" class="hidden md:inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white/85 hover:bg-white/10">Unlock</button>
-        <button class="md:hidden inline-flex items-center justify-center rounded-lg border border-white/15 p-2 text-white/80 hover:text-white hover:bg-white/10"
-                type="button" @click="menuOpen = !menuOpen" aria-label="Toggle navigation">
+        <button class="md:hidden inline-flex items-center justify-center rounded-lg border border-white/15 p-2 text-white/80 hover:text-white hover:bg-white/10" type="button" @click="menuOpen = !menuOpen" aria-label="Toggle navigation">
           <span class="block h-0.5 w-5 bg-white" />
         </button>
       </div>
@@ -152,17 +161,15 @@ const onRequestSubmit = () => {
             <span class="chip">Dev Student</span>
           </div>
           <div class="flex flex-wrap gap-3">
-            <a v-if="mode==='full'" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15"
-               href="/portfolio/public/CV%20%E2%80%93%20Baptiste%20DE%20LA%20GOUBLAYE%20DE%20MENORVAL.pdf" download>
+            <button v-if="mode==='full'" type="button" @click="downloadCV" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15">
               <img :src="docIcon" alt="" class="h-4 w-4 object-contain">
               <span>Download CV</span>
-            </a>
+            </button>
             <span v-else class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/5 text-white/60 border border-white/10 select-none">
               <img :src="docIcon" alt="" class="h-4 w-4 object-contain opacity-60">
               <span>CV unavailable</span>
             </span>
-            <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow"
-               href="#contact">
+            <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow" href="#contact">
               <img :src="emailIcon" alt="" class="h-4 w-4 object-contain">
               <span>Contact Me</span>
             </a>
@@ -194,13 +201,11 @@ const onRequestSubmit = () => {
                   <span class="chip-light">Go</span>
                 </div>
                 <div class="flex gap-2">
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium bg-brand text-white hover:brightness-110 shadow text-sm"
-                     href="https://www.palawi.fr/power4" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium bg-brand text-white hover:brightness-110 shadow text-sm" href="https://www.palawi.fr/power4" target="_blank" rel="noopener noreferrer">
                     <img :src="linkIcon" alt="" class="h-4 w-4 object-contain">
                     <span>Live</span>
                   </a>
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm"
-                     href="https://github.com/Palawizard/power4" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm" href="https://github.com/Palawizard/power4" target="_blank" rel="noopener noreferrer">
                     <img :src="githubIcon" alt="" class="h-4 w-4 object-contain">
                     <span>Code</span>
                   </a>
@@ -223,8 +228,7 @@ const onRequestSubmit = () => {
                   <span class="chip-light">Go</span>
                 </div>
                 <div class="flex gap-2">
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium bg-brand text-white hover:brightness-110 shadow text-sm"
-                     href="https://ydays.ynov.com/projects/6138" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium bg-brand text-white hover:brightness-110 shadow text-sm" href="https://ydays.ynov.com/projects/6138" target="_blank" rel="noopener noreferrer">
                     <img :src="linkIcon" alt="" class="h-4 w-4 object-contain">
                     <span>More Info</span>
                   </a>
@@ -244,8 +248,7 @@ const onRequestSubmit = () => {
                   <span class="chip-light">Go</span>
                 </div>
                 <div class="flex gap-2">
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm"
-                     href="https://github.com/Palawizard/POLARIS" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm" href="https://github.com/Palawizard/POLARIS" target="_blank" rel="noopener noreferrer">
                     <img :src="githubIcon" alt="" class="h-4 w-4 object-contain">
                     <span>Code</span>
                   </a>
@@ -265,18 +268,15 @@ const onRequestSubmit = () => {
                   <span class="chip-light">Java</span>
                 </div>
                 <div class="flex gap-2">
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium text-white bg-emerald-500 hover:brightness-110 shadow text-sm"
-                     href="https://modrinth.com/mod/dimensional_roulette" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium text-white bg-emerald-500 hover:brightness-110 shadow text-sm" href="https://modrinth.com/mod/dimensional_roulette" target="_blank" rel="noopener noreferrer">
                     <img :src="modrinthIcon" alt="" class="h-4 w-4 object-contain rounded">
                     <span>Modrinth</span>
                   </a>
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium text-white bg-amber-500 hover:brightness-110 shadow text-sm"
-                     href="https://www.curseforge.com/minecraft/mc-mods/dimensional-roulette" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium text-white bg-amber-500 hover:brightness-110 shadow text-sm" href="https://www.curseforge.com/minecraft/mc-mods/dimensional-roulette" target="_blank" rel="noopener noreferrer">
                     <img :src="curseforgeIcon" alt="" class="h-4 w-4 object-contain rounded">
                     <span>CurseForge</span>
                   </a>
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm"
-                     href="https://github.com/Palawizard/DimensionalRoulette" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm" href="https://github.com/Palawizard/DimensionalRoulette" target="_blank" rel="noopener noreferrer">
                     <img :src="githubIcon" alt="" class="h-4 w-4 object-contain">
                     <span>Code</span>
                   </a>
@@ -296,8 +296,7 @@ const onRequestSubmit = () => {
                   <span class="chip-light">C#</span>
                 </div>
                 <div class="flex gap-2">
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm"
-                     href="https://github.com/Palawizard/Utransfer" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm" href="https://github.com/Palawizard/Utransfer" target="_blank" rel="noopener noreferrer">
                     <img :src="githubIcon" alt="" class="h-4 w-4 object-contain">
                     <span>Code</span>
                   </a>
@@ -317,8 +316,7 @@ const onRequestSubmit = () => {
                   <span class="chip-light">C#</span>
                 </div>
                 <div class="flex gap-2">
-                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm"
-                     href="https://github.com/Palawizard/QRCode-generator" target="_blank" rel="noopener noreferrer">
+                  <a class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium border border-white/25 text-white hover:bg-white/10 text-sm" href="https://github.com/Palawizard/QRCode-generator" target="_blank" rel="noopener noreferrer">
                     <img :src="githubIcon" alt="" class="h-4 w-4 object-contain">
                     <span>Code</span>
                   </a>
@@ -367,13 +365,11 @@ const onRequestSubmit = () => {
       <div class="container-std">
         <h2 class="text-2xl font-semibold mb-6">Network</h2>
         <div class="flex flex-wrap gap-3">
-          <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15"
-             href="https://github.com/Palawizard" target="_blank" rel="noopener noreferrer">
+          <a class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-white/10 text-white hover:bg-white/15 border border-white/15" href="https://github.com/Palawizard" target="_blank" rel="noopener noreferrer">
             <img :src="githubIcon" alt="" class="h-5 w-5 object-contain">
             <span>GitHub</span>
           </a>
-          <a v-if="mode==='full'" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow"
-             href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
+          <a v-if="mode==='full'" class="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium bg-brand text-white hover:brightness-110 shadow" href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
             <img :src="linkedinIcon" alt="" class="h-5 w-5 object-contain rounded">
             <span>LinkedIn</span>
           </a>
@@ -513,7 +509,7 @@ const onRequestSubmit = () => {
     <div class="container-std flex items-center justify-between">
       <small class="text-mute">
         <span v-if="mode==='full'">© De Ménorval Baptiste</span>
-        <span v-else>© Palawi</span>
+        <span v-else>© Portfolio</span>
       </small>
       <div class="flex gap-4">
         <a class="text-white/80 hover:text-white transition inline-flex items-center gap-2" href="https://github.com/Palawizard" target="_blank" rel="noopener noreferrer">
