@@ -34,10 +34,20 @@
 
 @layer base {
     html, body { @apply bg-bg text-text; }
+
+    button,
+    [role="button"] {
+        cursor: pointer;
+    }
+
+    button:disabled,
+    [role="button"][aria-disabled="true"] {
+        cursor: not-allowed;
+    }
 }
 
 @layer components {
-    .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium transition disabled:opacity-60 disabled:cursor-not-allowed; }
+    .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed; }
     .btn-primary { @apply bg-brand text-white hover:brightness-110 shadow; }
     .btn-soft { @apply bg-white/10 text-white hover:bg-white/15 border border-white/15; }
     .btn-ghost { @apply border border-white/25 text-white/85 hover:bg-white/10; }
